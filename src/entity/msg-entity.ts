@@ -1,4 +1,4 @@
-export class  MsgEntity<T>{
+export class  MsgEntity{
     type!: symbol; // 必须是唯一的
-    data!: T;
+    data!: any;
 }

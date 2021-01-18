@@ -4,7 +4,7 @@ import {animalBgList, siteList} from '@/service/common-data';
 import {Subject} from "rxjs";
 import {MsgEntity} from "@/entity/msg-entity";
 import {initBetMap, initOddsMap} from "@/entity/bet-entity";
-import {RoundEntity} from "@/entity/round-entity";
+import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
 
 /**
  * 服务：用户获取游戏过程中所需要的相关信息 【单例 = true】
@@ -17,7 +17,7 @@ import {RoundEntity} from "@/entity/round-entity";
 @Service(true)
 export class GameService {
   // 信息push中间件
-  private msgSub = new Subject();
+  private msgSub = new Subject<MsgEntity>();
   public msgObs = this.msgSub.asObservable();
   // 用户信息 需要实时更新1，金币信息
   public userTotalAssetsNum = 0;
@@ -30,14 +30,16 @@ export class GameService {
   // 系统信息 1，总奖池信息
   public jackpotInfo = 0;
   // 2，游戏回合历史信息
-  public roundHisInfo: RoundEntity[] = [];
+  public roundHisInfo: RoundEntityWithBet[] = [];
   // 3，当前回合信息 可以自行修改
   public nowRoundInfo: RoundEntity = new RoundEntity();
+  // 4, 常量：动物数组
+  private animalListCommonData: AnimalEntity[] = [];
   /**
-   * 推送消息
+   * 推送游戏消息
    * @param msg
    */
-  public pushMsg<T>(msg: MsgEntity<T>) {
+  public pushMsg(msg: MsgEntity) {
     this.msgSub.next(msg);
   }
 
@@ -46,8 +48,11 @@ export class GameService {
    * 动物的摆放是中心对称的，获取到右上侧的坐标，即可计算拿到所有的坐标位置
    */
   public getAnimalListCommonData(): AnimalEntity[] {
+    if(this.animalListCommonData.length > 0){
+      return this.animalListCommonData;
+    }
     const sites = siteList;
-    return animalBgList.map((animal, index) => {
+    this.animalListCommonData = animalBgList.map((animal, index) => {
       animal.site = [0,0];
       // 从鲨鱼开始 一直到最后侧的动物，一共八个。鲨鱼 - 猴子 * 3 - 兔子 * 3 - 通杀
       if (index < 8) {
@@ -83,10 +88,33 @@ export class GameService {
       animal.rect = {x: animal.site[0], y: animal.site[1]};
       return animal;
     });
+    return this.animalListCommonData;
   }
 
+  /**
+   * 获取本回合的目标动物
+   */
+  public getResultAnimalInfo(): AnimalEntity {
+    // 根据历史结果，计算偏移量
+    // 根据奖池计算概率偏移
+    // 根据动物赔率计算基数
+    // 综合以上三者，计算目标动物
+    return this.animalListCommonData[GameService.randomNumForNTOM(this.animalListCommonData.length - 1, 0)];
+  }
 
-
+  public getBetInfo(round?: RoundEntity): RoundEntityWithBet {
+    if(round){
+      this.nowRoundInfo  = round;
+    }
+    // 下注的信息
+    const betNum = this.betMap.get(this.nowRoundInfo.resultInfo?.name || '') || 0;
+    const odds = this.nowRoundInfo.resultInfo?.line;
+    const roundEntityWithBet = new RoundEntityWithBet();
+    roundEntityWithBet.resultInfo = this.nowRoundInfo.resultInfo;
+    roundEntityWithBet.betInfo = this.betMap;
+    roundEntityWithBet.setInfo = Number(betNum) * Number(odds);
+    return roundEntityWithBet;
+  }
 
 
 
@@ -105,4 +133,8 @@ export class GameService {
   // public setUserScoreNum(value: number) {
   //   this._userScoreNum = value;
   // }
+
+  public static randomNumForNTOM(m: number , n: number): number {
+    return Math.floor(Math.random()*(m-n+1)+n)
+  }
 }

@@ -10,7 +10,10 @@
   <!-- 单压飞禽走兽操作 -->
   <div class="fly-or-beast">
     <div class="beast-btn btn"></div>
-    <div class="game-time"></div>
+    <div class="game-time">
+      <div class="label" :class="roundInfo.timeType"></div>
+      <div v-if="roundInfo.timeType === 'betTime'" class="time-value"> {{ roundInfo.time }}</div>
+    </div>
     <div class="fly-btn btn"><span>{{ '1222223123' }}</span></div>
   </div>
   <!-- 具体下注区域 -->
@@ -44,10 +47,26 @@
 import {Component, Vue} from "vue-property-decorator";
 import {Inject} from "@/di/inject";
 import {GameService} from "@/service/game-service";
+import {gameRoundInfoKey} from "@/service/common-data";
+import {filter, map} from "rxjs/operators";
+import {MsgEntity} from "@/entity/msg-entity";
+import {RoundEntity} from "@/entity/round-entity";
 
 @Component
 export default class GameBet extends Vue{
-  @Inject private game$!: GameService;
+  @Inject() private game$!: GameService;
+  // 当前回合信息
+  roundInfo: RoundEntity = new RoundEntity();
+  mounted(){
+    this.game$.msgObs
+        .pipe(
+            filter((msg: MsgEntity) => msg.type === gameRoundInfoKey),
+            map(msg => msg.data))
+        .subscribe(data => {
+          this.roundInfo.time = data.time;
+          this.roundInfo.timeType = data.timeType;
+        })
+  }
 }
 </script>
 
@@ -127,7 +146,7 @@ div.bet-container{
         background-position: 0,0;
         content: '';
         z-index: 0;
-        left: 8.5px;
+        left: 9px;
         bottom: 15px;
       }
       padding-left: 12px;
@@ -155,6 +174,38 @@ div.bet-container{
         background-image: url("../assets/bet/PNG_BT_ANIMAL_9.png");
       }
     }
+    div.game-time{
+      margin-top: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      div.label{
+        width: 85.666666666666666666666666667px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: url("../assets/game/TIME_FLAG.png");
+        &.startTime{
+          background-position: -85.666666666666666666667px * 2 , 0;
+        }
+        &.betTime{
+          background-position: -85.666666666666666666667px * 1 , 0;
+        }
+        &.freeTime{
+          background-position: 85.666666666666666666667px * 0 , 0;
+        }
+      }
+      div.time-value{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #7FD1A9;
+        font-size: 20px;
+        line-height: 28px;
+        width: 38px;
+      }
+    }
   }
 
   div.bet-action{
@@ -177,7 +228,7 @@ div.bet-container{
         background-position: 0,0;
         content: '';
         z-index: 0;
-        left: 5.7px;
+        left: 6px;
         bottom: 16px;
       }
       padding-left: 10px;

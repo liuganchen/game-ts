@@ -61,3 +61,13 @@ export const siteList = [
   [(990 - 91) / 2  +  210 + 12 + 70 + 65 + 53 + 40 - 13 - 2 - 2 - 2 +1, 54 + 30 + 8 - 3 + 24 + 28 + 2 + 23 + 40 + 3 + 3 + 2 - 1],
 
 ];
+// 游戏配置信息
+export const gameStaticConfig = {
+  startTime: 8,
+  freeTime: 5,
+  betTime:5,
+  turns: 4
+}
+// 消息key 值
+export const gameRoundInfoKey = Symbol('游戏当前回合信息');
+export const evasiveIsOver = Symbol('当前轮转动画已经结束');
