@@ -3,68 +3,160 @@
   <!-- 操作区域：续投，清空 -->
   <div class="call-clear-action">
     <div class="left-btn">
-      <div class="call-btn btn"></div>
-      <div class="clear-btn btn"></div>
+      <div class="call-btn btn" :class="disabledClass" @click="copyBeforeBet"></div>
+      <div class="clear-btn btn" :class="disabledClass" @click="clearNowBet"></div>
     </div>
   </div>
   <!-- 单压飞禽走兽操作 -->
   <div class="fly-or-beast">
-    <div class="beast-btn btn"></div>
+    <div class="fly-btn btn" :class="disabledClass" @click="betAction('fq')"><span>{{ nowBetEntity.fq }}</span></div>
     <div class="game-time">
       <div class="label" :class="roundInfo.timeType"></div>
       <div v-if="roundInfo.timeType === 'betTime'" class="time-value"> {{ roundInfo.time }}</div>
     </div>
-    <div class="fly-btn btn"><span>{{ '1222223123' }}</span></div>
+    <div class="beast-btn btn" :class="disabledClass" @click="betAction('zs')"><span>{{ nowBetEntity.zs }}</span></div>
   </div>
   <!-- 具体下注区域 -->
   <div class="bet-action">
-    <div class="animal-1-btn btn"></div>
-    <div class="animal-2-btn btn"></div>
-    <div class="animal-3-btn btn"></div>
-    <div class="animal-4-btn btn"></div>
-    <div class="animal-11-btn btn"><span>{{ '123123' }}</span></div>
-    <div class="animal-5-btn btn"></div>
-    <div class="animal-6-btn btn"></div>
-    <div class="animal-7-btn btn"></div>
-    <div class="animal-8-btn btn"><span>{{ '123123' }}</span></div>
+    <div class="animal-1-btn btn" :class="disabledClass" @click="betAction('yz')"><span>{{ nowBetEntity.yz }}</span></div>
+    <div class="animal-2-btn btn" :class="disabledClass" @click="betAction('gz')"><span>{{ nowBetEntity.gz }}</span></div>
+    <div class="animal-3-btn btn" :class="disabledClass" @click="betAction('kq')"><span>{{ nowBetEntity.kq }}</span></div>
+    <div class="animal-4-btn btn" :class="disabledClass" @click="betAction('ly')"><span>{{ nowBetEntity.ly }}</span></div>
+    <div class="animal-11-btn btn" :class="disabledClass" @click="betAction('sy')"><span>{{ nowBetEntity.sy }}</span></div>
+    <div class="animal-5-btn btn" :class="disabledClass" @click="betAction('sz')"><span>{{ nowBetEntity.sz }}</span></div>
+    <div class="animal-6-btn btn" :class="disabledClass" @click="betAction('xm')"><span>{{ nowBetEntity.xm }}</span></div>
+    <div class="animal-7-btn btn" :class="disabledClass" @click="betAction('hz')"><span>{{ nowBetEntity.hz }}</span></div>
+    <div class="animal-8-btn btn" :class="disabledClass" @click="betAction('tz')"><span>{{ nowBetEntity.tz }}</span></div>
   </div>
   <!-- 下注倍率选择 -->
   <div class="jet-ton-action">
-    <div class="side-view score-num"><span>{{ '5435342' }}</span></div>
+    <div class="side-view score-num"><span>{{ scoreNum }}</span></div>
     <div class="jetton-btns">
-      <div class="jetton-100-btn btn"></div>
-      <div class="jetton-1000-btn btn"></div>
-      <div class="jetton-1w-btn btn"></div>
-      <div class="jetton-10w-btn btn"></div>
-      <div class="jetton-100w-btn btn"></div>
+      <div class="jetton-100-btn btn" :class="disabledClass" @click="changeJetTon(100)"></div>
+      <div class="jetton-1000-btn btn" :class="disabledClass" @click="changeJetTon(1000)"></div>
+      <div class="jetton-1w-btn btn" :class="disabledClass" @click="changeJetTon(10000)"></div>
+      <div class="jetton-10w-btn btn" :class="disabledClass" @click="changeJetTon(100000)"></div>
+      <div class="jetton-100w-btn btn" :class="disabledClass" @click="changeJetTon(1000000)"></div>
     </div>
-    <div class="side-view assets-num"><span>{{ '123123123123' }}</span></div>
+    <div class="side-view assets-num"><span>{{ totalAssets }}</span></div>
   </div>
 </div>
 </template>
 
 <script lang="ts">
-import {Component, Vue} from "vue-property-decorator";
+import {Component, Vue, Watch} from "vue-property-decorator";
 import {Inject} from "@/di/inject";
 import {GameService} from "@/service/game-service";
-import {gameRoundInfoKey} from "@/service/common-data";
+import {betIsOver, gameRoundInfoKey} from "@/service/common-data";
 import {filter, map} from "rxjs/operators";
 import {MsgEntity} from "@/entity/msg-entity";
 import {RoundEntity} from "@/entity/round-entity";
+import {BetEntity, betKeyType} from "@/entity/bet-entity";
+import {timer} from "rxjs";
 
 @Component
 export default class GameBet extends Vue{
   @Inject() private game$!: GameService;
   // 当前回合信息
   roundInfo: RoundEntity = new RoundEntity();
+  // 默认一百倍率
+  jetTonNum = 100;
+  beforeBetEntity = new BetEntity();
+  nowBetEntity = new BetEntity();
+  // 本金，积分
+  totalAssets = 0;
+  scoreNum = 0;
+
+  @Watch('totalAssets') onTotalAssetsChange(){
+    this.game$.userTotalAssetsNum = this.totalAssets;
+  }
+  get disabledClass() {
+    return this.roundInfo.timeType === 'betTime' ? '' : 'disabled';
+  }
+  copyBeforeBet() {
+    if(this.roundInfo.timeType === 'betTime') {
+      this.nowBetEntity = this.beforeBetEntity;
+      this.totalAssets -= this.nowBetEntity.total();
+      console.log('【续压】......')
+    }
+  }
+  changeJetTon(jetNum: number) {
+    if(this.roundInfo.timeType === "betTime") {
+      this.jetTonNum = jetNum;
+    }
+  }
+  clearNowBet() {
+    if(this.roundInfo.timeType === "betTime") {
+      this.totalAssets += this.nowBetEntity.total();
+      this.nowBetEntity = new BetEntity();
+    }
+  }
+  betAction(keyName: betKeyType) {
+    if(this.roundInfo.timeType !== "betTime") {
+      return;
+    }
+    if(this.totalAssets < this.jetTonNum) {
+      return;
+    }
+    this.nowBetEntity[keyName] = this.nowBetEntity[keyName] + this.jetTonNum;
+    // 播放金币减少的动画
+    //
+    this.game$.updateBetEntityKeyValue(keyName, this.nowBetEntity[keyName]);
+    // 更新金币
+    this.totalAssets -= this.jetTonNum;
+  }
+  /** 空闲时间操作 **/
+  public freeTimeAction() {
+    // 清空本轮下注
+    this.beforeBetEntity = this.nowBetEntity;
+    this.nowBetEntity = new BetEntity();
+    // 查询金币，如果金币 / 积分 增加，开始播放金币增加的动画
+    this.totalAssets = this.game$.userTotalAssetsNum;
+    this.scoreNum = this.game$.userScoreNum;
+  }
+  /** 下注时间操作 **/
+  public betTimeAction() {
+    // 开始倒计时，下注区域被激活，可以操作
+    this.beginBetTimer();
+    // todo 测试需要，自动续压
+    this.copyBeforeBet();
+  }
+  /** 开始时间操作 **/
+  public startTimeAction() {
+    // 下注区域被锁定，不许任何操作
+  }
+
+  beginBetTimer() {
+    if(this.roundInfo.time <= 0){
+      // 计时结束
+      this.game$.pushMsg({type: betIsOver, data: {}});
+      return;
+    }
+    timer(1000).subscribe(() => {
+      this.roundInfo.time -= 1;
+      this.beginBetTimer();
+    })
+  }
+
   mounted(){
     this.game$.msgObs
-        .pipe(
-            filter((msg: MsgEntity) => msg.type === gameRoundInfoKey),
+        .pipe(filter((msg: MsgEntity) => msg.type === gameRoundInfoKey),
             map(msg => msg.data))
         .subscribe(data => {
           this.roundInfo.time = data.time;
           this.roundInfo.timeType = data.timeType;
+          // 下注时间，做什么 空闲时间，做什么 开始时间，做什么
+          switch (this.roundInfo.timeType){
+            case "betTime":
+              this.betTimeAction();
+              break;
+            case "freeTime":
+              this.freeTimeAction();
+              break;
+            case "startTime":
+              this.startTimeAction();
+              break;
+          }
         })
   }
 }
@@ -239,7 +331,7 @@ div.bet-container{
       &:active{
         background-position: -85px,0;
         &::before{
-          bottom: 13px;
+          bottom: 14px;
         }
       }
       &.disabled{

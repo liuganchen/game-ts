@@ -7,6 +7,8 @@
       <game-evasive/>
       <!--  下注信息  -->
       <game-bet/>
+      <!--   游戏结果信息   -->
+      <game-show-res/>
     </div>
   </div>
 </template>
@@ -19,67 +21,83 @@ import GameBet from "@/components/game-bet.vue";
 import {GameService} from "@/service/game-service";
 import {Inject} from "@/di/inject";
 import {RoundEntity} from "@/entity/round-entity";
-import {evasiveIsOver, gameRoundInfoKey, gameStaticConfig} from "@/service/common-data";
+import {betIsOver, evasiveIsOver, freeIsOver, gameRoundInfoKey, gameStaticConfig} from "@/service/common-data";
 import {timer} from "rxjs";
 import {filter} from "rxjs/operators";
+import GameShowRes from "@/components/game-show-res.vue";
 
-@Component({components:{GameBet, GameBg, GameEvasive}})
+/**
+ * 游戏玩法：
+ * 1，下注开始：玩家下注
+ * 2，本回合游戏开始，开始播放轮转动画，显示结果
+ * 3，空闲时间，进行结算（播放结算动画等等）
+ */
+@Component({components:{GameShowRes, GameBet, GameBg, GameEvasive}})
 export default class Game extends Vue{
   @Inject() private game$!: GameService;
   // 当前回合
   roundEntity: RoundEntity = new RoundEntity();
   // 配置
   gameConfig = gameStaticConfig;
+
+  /** 启动游戏开始执行第一个回合 */
+  public startGame(): void {
+    // -> -> -> 从开始空闲时间开始游戏
+    this.startFree();
+  }
+
+  /** 开始调用轮转操作 */
+  public startBegin() {
+    // 进入开始阶段
+    console.log('【开始】游戏进入开始时间')
+    this.roundEntity.timeType = 'startTime';
+    this.roundEntity.time = this.gameConfig[this.roundEntity.timeType];
+    // 广播阶段更新
+    this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
+  }
+
+  /** 开始空闲时间 */
+  public startFree(){
+    console.log('【空闲】游戏进入空闲时间', '空闲时间为：', this.gameConfig.freeTime)
+    this.roundEntity.timeType = "freeTime";
+    this.roundEntity.time = this.gameConfig.freeTime;
+    this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
+    // 空闲一段事件后，广播空闲时间结束
+    timer(this.gameConfig.freeTime * 1000).subscribe(()=> {
+      this.game$.pushMsg({type: freeIsOver, data: this.roundEntity})
+    });
+  }
+  /** 开始下注时间 **/
+  startBet() {
+    console.log('【下注】游戏进入下注时间')
+    // 一定时间后，开始下注
+    this.roundEntity.timeType = 'betTime';
+    this.roundEntity.time = this.gameConfig[this.roundEntity.timeType];
+    // 广播阶段更新
+    this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
+  }
+
+  /** 游戏运行 + 监听 **/
   mounted(){
     // 开始游戏
     this.startGame();
-    // 监听轮圈结束
+    // 监听下注阶段结束,开始轮转
+    this.game$.msgObs.pipe(filter(msg => msg.type === betIsOver)).subscribe(()=> {
+      // 计算目标动物
+      this.roundEntity.resultInfo = this.game$.getResultAnimalInfo();
+      this.startBegin();
+    })
+    // 监听空闲时间结束，进入下注操作
+    this.game$.msgObs.pipe(filter(msg => msg.type === freeIsOver)).subscribe(()=>{
+      this.startBet();
+    })
+    // 监听轮转结束，进入空闲时间，播放结果动画等
     this.game$.msgObs.pipe(filter(msg => msg.type === evasiveIsOver)).subscribe(()=>{
       // 计算结果
-      const result = this.game$.getBetInfo(this.roundEntity);
-      // 重新启动回合计时器
-      this.roundEntity.nextType();
-      this.roundEntity.time = this.gameConfig[this.roundEntity.timeType];
-      this.startRound();
+      this.game$.getBetInfo(this.roundEntity);
+      this.startFree();
     })
   }
-  /**
-   * 启动游戏
-   * 1，开始执行第一个回合。
-   */
-  public startGame(): void {
-    // 初始化
-    this.roundEntity.timeType = "freeTime";
-    this.roundEntity.time = this.gameConfig.freeTime;
-    this.startRound();
-  }
-
-  /**
-   * 启动本回合
-   * 一个回合包括
-   * 1，下注阶段 ---- 计时30S，用户下注，开始时计算出结果
-   * 2，开始阶段 ---- 中断计时器。然后打圈旋转到目标结果。
-   * 3，空闲阶段 ---- 2s 播放动画，结算用户金币。
-   * startRound() 需要计时30S + 计算出结果 + 调用旋转func startRotate();
-   */
-  public startRound(): void {
-    this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
-    this.roundEntity.time = this.roundEntity.time - 1;
-    if(this.roundEntity.time <= 0) {
-      this.roundEntity.nextType();
-      this.roundEntity.time = this.gameConfig[this.roundEntity.timeType];
-      // 如果下注结束 -》 开始游戏需要计算 目标结果
-      if(this.roundEntity.timeType === 'startTime') {
-        this.roundEntity.resultInfo = this.game$.getResultAnimalInfo();
-        this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
-        // 结束计时器
-        return;
-      }
-    }
-    // 每秒刷新
-    timer(1000).subscribe(()=> this.startRound());
-  }
-
 }
 </script>
 

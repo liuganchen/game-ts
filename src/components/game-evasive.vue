@@ -31,20 +31,6 @@ export default class GameEvasive extends Vue{
   totalStep = 0;
   // 6 - 15
   sleepStepNum = 10;
-  mounted(){
-    this.gameService.msgObs
-        .pipe(
-            filter(msg => msg.type === gameRoundInfoKey
-                && (msg.data as RoundEntity).time === gameStaticConfig.startTime && msg.data.timeType === 'startTime'),
-            map(msg => msg.data))
-        .subscribe(data => {
-          this.resultAnimal = data.resultInfo;
-          console.log('目标动物', this.resultAnimal.name,this.resultAnimal.index);
-          // 计算动画,开始
-          this.computeRotateNumList();
-          this.startRotate()
-        })
-  }
 
   /**
    * 计算轮转动画的时间数组
@@ -71,7 +57,7 @@ export default class GameEvasive extends Vue{
    * @param step 计数器
    * @param timeNum 延时
    */
-  startRotate(step = 0, timeNum = 240) {
+  startRotate(step = 0, timeNum = 150) {
     timer(timeNum).subscribe(()=>{
       timeNum = this.updateTimeNum(step, timeNum);
       step = step + 1;
@@ -110,6 +96,21 @@ export default class GameEvasive extends Vue{
     if(this.activeIndex > 27){
       this.activeIndex = 0
     }
+  }
+
+
+  mounted(){
+    this.gameService.msgObs
+        .pipe(
+            filter(msg => msg.type === gameRoundInfoKey && msg.data.timeType === 'startTime'),
+            map(msg => msg.data))
+        .subscribe(data => {
+          this.resultAnimal = data.resultInfo;
+          console.log('目标动物', this.resultAnimal.name,this.resultAnimal.index);
+          // 计算动画,开始
+          this.computeRotateNumList();
+          this.startRotate()
+        })
   }
 }
 </script>

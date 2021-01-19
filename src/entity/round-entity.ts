@@ -1,4 +1,5 @@
 import {AnimalEntity} from "@/entity/animal-entity";
+import {BetEntity} from "@/entity/bet-entity";
 
 export class RoundEntity{
     // 当前时间：startTime freeTime betTime
@@ -12,8 +13,9 @@ export class RoundEntity{
     resultInfo? : AnimalEntity;
 }
 export class RoundEntityWithBet extends RoundEntity{
+    date = Date.now();
     // 下注信息
-    betInfo?: Map<string, number>;
+    betInfo?: BetEntity;
     // 打中的动物
     resultInfo? : AnimalEntity;
     // 结算信息，用户赢了还是输了多少

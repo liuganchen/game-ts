@@ -1,9 +1,9 @@
 import {AnimalEntity} from '@/entity/animal-entity';
 import {Service} from '@/di/service';
-import {animalBgList, siteList} from '@/service/common-data';
+import {animalBgList, gameStaticConfig, siteList} from '@/service/common-data';
 import {Subject} from "rxjs";
 import {MsgEntity} from "@/entity/msg-entity";
-import {initBetMap, initOddsMap} from "@/entity/bet-entity";
+import {BetEntity, betKeyType, initBetEntity, initBetMap} from "@/entity/bet-entity";
 import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
 
 /**
@@ -20,13 +20,12 @@ export class GameService {
   private msgSub = new Subject<MsgEntity>();
   public msgObs = this.msgSub.asObservable();
   // 用户信息 需要实时更新1，金币信息
-  public userTotalAssetsNum = 0;
-  // 2，得分信息
+  public userTotalAssetsNum = gameStaticConfig.defaultTotalAssets;
+  // 2，得分信息 , 只算赢
   public userScoreNum = 0;
   // 3，下注信息，历史下注信息
-  public betMap: Map<string, number> = initBetMap;
-  public oddsMap: Map<string, number> = initOddsMap; //  赔率的map
-  public historyBetMaps: Map<string, number>[] = [];
+  private betMap: Map<string, betKeyType> = initBetMap;
+  private betEntity: BetEntity = initBetEntity;
   // 系统信息 1，总奖池信息
   public jackpotInfo = 0;
   // 2，游戏回合历史信息
@@ -95,28 +94,68 @@ export class GameService {
    * 获取本回合的目标动物
    */
   public getResultAnimalInfo(): AnimalEntity {
-    // 根据历史结果，计算偏移量
+    // 根据历史结果计算偏移量
     // 根据奖池计算概率偏移
     // 根据动物赔率计算基数
     // 综合以上三者，计算目标动物
     return this.animalListCommonData[GameService.randomNumForNTOM(this.animalListCommonData.length - 1, 0)];
   }
 
+  /**
+   * 获取本回合结果
+   * @param round
+   */
   public getBetInfo(round?: RoundEntity): RoundEntityWithBet {
     if(round){
       this.nowRoundInfo  = round;
     }
     // 下注的信息
-    const betNum = this.betMap.get(this.nowRoundInfo.resultInfo?.name || '') || 0;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const betName = this.betMap.get(this.nowRoundInfo.resultInfo?.name!)!;
+    const betNum = this.betEntity[betName];
     const odds = this.nowRoundInfo.resultInfo?.line;
     const roundEntityWithBet = new RoundEntityWithBet();
     roundEntityWithBet.resultInfo = this.nowRoundInfo.resultInfo;
-    roundEntityWithBet.betInfo = this.betMap;
-    roundEntityWithBet.setInfo = Number(betNum) * Number(odds);
+    roundEntityWithBet.betInfo = this.betEntity;
+    let setInfo = 0;
+    if(this.nowRoundInfo.resultInfo?.lineType === 'gi') {
+      // 如果是统赔
+      setInfo = this.betEntity.getGeneralIndemnityNumber();
+    }
+    if(this.nowRoundInfo.resultInfo?.lineType === 'kt') {
+      // 通杀
+      setInfo = 0;
+    }
+    if(this.nowRoundInfo.resultInfo?.lineType !== 'kt' && this.nowRoundInfo.resultInfo?.lineType !== 'gi'){
+      setInfo = Number(betNum) * Number(odds);
+      // 计算飞禽走兽 奖励
+      if(this.nowRoundInfo.resultInfo?.lineType === 'fq'){
+        setInfo += this.betEntity.fq * 2;
+      }
+      // 计算飞禽走兽 奖励
+      if(this.nowRoundInfo.resultInfo?.lineType === 'zs'){
+        setInfo += this.betEntity.zs * 2;
+      }
+    }
+
+    roundEntityWithBet.setInfo = setInfo;
+    // 更新得分信息
+    this.userScoreNum += roundEntityWithBet.setInfo;
+    // 更新总分信息
+    this.userTotalAssetsNum += roundEntityWithBet.setInfo;
+    // 更新奖池
+    this.jackpotInfo = this.jackpotInfo + this.betEntity.total() - roundEntityWithBet.setInfo;
+    // 结果存入历史
+    this.roundHisInfo.push(roundEntityWithBet);
     return roundEntityWithBet;
   }
 
-
+  updateBetEntityKeyValue(betKey: betKeyType, value: number) {
+    this.betEntity[betKey] = value;
+  }
+  updateBetEntity(ent: BetEntity) {
+    this.betEntity = ent;
+  }
 
 
   // ////////////////////////////////////////////////////////////////////////////

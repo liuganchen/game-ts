@@ -21,6 +21,7 @@ export default class App extends Vue {}
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 img{
   -webkit-user-drag: none;
