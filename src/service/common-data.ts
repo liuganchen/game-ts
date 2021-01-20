@@ -65,7 +65,7 @@ export const siteList = [
 export const gameStaticConfig = {
   startTime: 8,
   freeTime: 5,
-  betTime:20,
+  betTime:5,
   turns: 4,
   defaultTotalAssets: 1000000
 }
