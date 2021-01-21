@@ -1,11 +1,11 @@
 {
-  "name": "game-ts",
+  "name": "animal-paradise",
   "version": "0.1.0",
   "private": true,
   "main": "main.js",
   "build": {
-    "appId": "com.hangge.demo",
-    "copyright": "Copyright © 2019 hangge.com",
+    "appId": "com.liuganchen.gamets",
+    "copyright": "Copyright © 2019 liuganchen.com",
     "nsis": {
       "oneClick": true,
       "perMachine": true,

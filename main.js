@@ -3,17 +3,17 @@ const { app, BrowserWindow } = require('electron')
 
 function createWindow () {
     const win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 990,
+        height: 740,
         webPreferences: {
             nodeIntegration: true
         }
     })
 
     win.loadFile('./dist/index.html').then(r => console.log(r))
-    win.webContents.openDevTools({
-        mode: 'right'
-    });
+    // win.webContents.openDevTools({
+    //     mode: 'right'
+    // });
 }
 // 自动打开调试台
 
