@@ -101,7 +101,7 @@ export class GameService {
     const rand100f = GameService.randomNumForNTOM(10 , 1)
     if(rand100f === 1) {
       if(this.jackpotInfo > gameStaticConfig.fsFlag) {
-        // 连续三把都输了，并且
+        // 奖池已经大于放水的金额了，通陪安排上
         return this.animalListCommonData.filter(item => item.shortName === 'tp')[0];
       }
       // 继续通杀

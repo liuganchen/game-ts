@@ -66,6 +66,9 @@ export default class GameShowRes extends Vue{
     })
   }
   scrollView(coord = 80) {
+    if(!this.$refs.historyList || this.$refs.historyScroll){
+      return;
+    }
     // 内部滚动条的偏移量 left
     const innerLeft = (this.$refs.historyList as HTMLDivElement)?.getBoundingClientRect()?.left || 0;
     const containerLeft = (this.$refs.historyScroll as HTMLDivElement)?.getBoundingClientRect()?.left || 0;
