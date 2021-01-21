@@ -20,4 +20,6 @@ export class AnimalEntity {
   index?: number;
   // 被激活
   active?: boolean;
+  // 概率
+  chanceNum?: number;
 }

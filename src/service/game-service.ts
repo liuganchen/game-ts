@@ -1,6 +1,6 @@
 import {AnimalEntity} from '@/entity/animal-entity';
 import {Service} from '@/di/service';
-import {animalBgList, gameStaticConfig, siteList} from '@/service/common-data';
+import {animalBgList, animalChance, gameStaticConfig, siteList} from '@/service/common-data';
 import {Subject} from "rxjs";
 import {MsgEntity} from "@/entity/msg-entity";
 import {BetEntity, betKeyType, initBetEntity, initBetMap} from "@/entity/bet-entity";
@@ -92,13 +92,27 @@ export class GameService {
 
   /**
    * 获取本回合的目标动物
+   * 根据奖池判断 5% 概率 给 通杀/通赔偿
+   * 根据赔率计算概率
    */
   public getResultAnimalInfo(): AnimalEntity {
-    // 根据历史结果计算偏移量
+    // 根据历史结果计算偏移量 todo
     // 根据奖池计算概率偏移
+    const rand100f = GameService.randomNumForNTOM(10 , 1)
+    if(rand100f === 1) {
+      if(this.jackpotInfo > gameStaticConfig.fsFlag) {
+        // 连续三把都输了，并且
+        return this.animalListCommonData.filter(item => item.shortName === 'tp')[0];
+      }
+      // 继续通杀
+      return this.animalListCommonData.filter(item => item.shortName === 'ts')[0];
+    }
     // 根据动物赔率计算基数
+    const rand100s = GameService.randomNumForNTOM(100 , 1)
+    const chanceAnimal = animalChance.filter(ani => ani.chanceMin <= rand100s && rand100s <= ani.chanceMax)[0];
+    const resAniList = this.animalListCommonData.filter(ani => ani.name === chanceAnimal.name);
     // 综合以上三者，计算目标动物
-    return this.animalListCommonData[GameService.randomNumForNTOM(this.animalListCommonData.length - 1, 0)];
+    return resAniList[GameService.randomNumForNTOM(resAniList.length - 1, 0)];
   }
 
   /**

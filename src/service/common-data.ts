@@ -17,16 +17,61 @@ import {AnimalEntity} from '@/entity/animal-entity';
  * 燕子：6
  * 走兽：2
  * 飞禽：2
+ * 下注9  获取（6 ~ 24）
+ * 下注一百次, 鲨鱼打中a次，老鹰b次，狮子c次，猴子d次，孔雀e次。熊猫f。鸽子g 兔子 h 燕子 i
+ * 900 约等于 24a + 12b + 12c + 8d + 8e + 8f + 8g + 6h + 6i ;
+ * 100 ====  a + b + c + d +   e  + f + g + h + i;
+ * 100 ====  4 + 8 + 8 + 12 + 12 + 12 + 12 + 16 + 16
+ *  1 - 100
  */
+export const animalChance = [
+  {
+    name: '鲨鱼',
+    chanceMin: 1,
+    chanceMax: 4,
+  },{
+    name: '老鹰',
+    chanceMin: 5,
+    chanceMax: 12,
+  },{
+    name: '狮子',
+    chanceMin: 13,
+    chanceMax: 20,
+  },{
+    name: '猴子',
+    chanceMin: 21,
+    chanceMax: 32,
+  },{
+    name: '孔雀',
+    chanceMin: 33,
+    chanceMax: 44,
+  },{
+    name: '熊猫',
+    chanceMin: 45,
+    chanceMax: 56,
+  },{
+    name: '鸽子',
+    chanceMin: 57,
+    chanceMax: 68,
+  },{
+    name: '兔子',
+    chanceMin: 69,
+    chanceMax: 84,
+  },{
+    name: '燕子',
+    chanceMin: 85,
+    chanceMax: 100,
+  },
+]
 
 export const animalBgList: AnimalEntity[] = [
   {name: '鲨鱼', line: 24, lineType: 'sy', shortName: 'sy'},
-  {name: '燕子', line: 24, lineType: 'fq', shortName: 'yz'},
-  {name: '燕子', line: 24, lineType: 'fq', shortName: 'yz'},
-  {name: '燕子', line: 24, lineType: 'fq', shortName: 'yz'},
-  {name: '鸽子', line: 24, lineType: 'fq', shortName: 'gz'},
-  {name: '鸽子', line: 24, lineType: 'fq', shortName: 'gz'},
-  {name: '鸽子', line: 24, lineType: 'fq', shortName: 'gz'},
+  {name: '燕子', line: 6, lineType: 'fq', shortName: 'yz'},
+  {name: '燕子', line: 6, lineType: 'fq', shortName: 'yz'},
+  {name: '燕子', line: 6, lineType: 'fq', shortName: 'yz'},
+  {name: '鸽子', line: 8, lineType: 'fq', shortName: 'gz'},
+  {name: '鸽子', line: 8, lineType: 'fq', shortName: 'gz'},
+  {name: '鸽子', line: 8, lineType: 'fq', shortName: 'gz'},
   {name: '通杀', line: 0, lineType: 'kt', shortName: 'ts'},
   {name: '孔雀', line: 8, lineType: 'fq', shortName: 'kq'},
   {name: '孔雀', line: 8, lineType: 'fq', shortName: 'kq'},
@@ -63,10 +108,11 @@ export const siteList = [
 ];
 // 游戏配置信息
 export const gameStaticConfig = {
-  startTime: 8,
-  freeTime: 5,
-  betTime:5,
+  startTime: 5,
+  freeTime: 4,
+  betTime:20,
   turns: 4,
+  fsFlag: 50000,
   defaultTotalAssets: 1000000
 }
 // 消息key 值

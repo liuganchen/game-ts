@@ -18,7 +18,7 @@
     </div>
     <!--  得分显示  -->
     <div class="res-score">
-      <div v-if="roundEntity.resultInfo && showRes && resScore" class="score-num-view">{{ resScore }}</div>
+      <div v-if="roundEntity.resultInfo && showRes && showScore" class="score-num-view">{{ resScore }}</div>
     </div>
   </div>
 </template>
@@ -55,7 +55,7 @@ export default class GameShowRes extends Vue{
             this.showRes = true;
             this.resScore = this.game$.roundHisInfo[this.historyInfo.length - 1]?.setInfo || 0;
             // 没有下注，不显示得分
-            this.showScore = lastRoundInfo.betInfo?.total() > 0
+            this.showScore = (lastRoundInfo.betInfo?.total() || 0) > 0
           }
           timer(3000).subscribe(()=>{
             this.showRes = false;
@@ -67,8 +67,8 @@ export default class GameShowRes extends Vue{
   }
   scrollView(coord = 80) {
     // 内部滚动条的偏移量 left
-    const innerLeft = (this.$refs.historyList as HTMLDivElement).getBoundingClientRect().left;
-    const containerLeft = (this.$refs.historyScroll as HTMLDivElement).getBoundingClientRect().left;
+    const innerLeft = (this.$refs.historyList as HTMLDivElement)?.getBoundingClientRect()?.left || 0;
+    const containerLeft = (this.$refs.historyScroll as HTMLDivElement)?.getBoundingClientRect()?.left || 0;
     const offset = innerLeft - containerLeft;
     (this.$refs.historyScroll as HTMLDivElement).scroll({
       left: coord - offset,
@@ -193,7 +193,7 @@ div.game-show-res{
     display: flex;
     justify-content: center;
     align-items: center;
-    top: 175px;
+    top: 165px;
     height: 150px;
     .history-cell{
       animation: identifier 3s ease 1;
@@ -206,7 +206,7 @@ div.game-show-res{
     display: flex;
     justify-content: center;
     align-items: center;
-    top: 75px;
+    top: 385px;
     height: 39px;
     div.score-num-view{
       width: 273px;
@@ -218,6 +218,7 @@ div.game-show-res{
       justify-content: center;
       align-items: center;
       color: #D0E4B9;
+      animation: identifier2 3s ease 1;
     }
   }
 }
@@ -225,10 +226,21 @@ div{
   color: #D6C466;
 }
 @keyframes identifier {
-  0% { transform: scale(1);opacity: 0}
+  0% { transform: scale(0.1);opacity: 0}
+  10% { transform: scale(3); opacity: 1}
   20% { transform: scale(3); opacity: 1}
   50% { transform: scale(3);opacity: 1 }
   80% { transform: scale(3); opacity: 1}
+  90% { transform: scale(3); opacity: 1}
+  100% { transform: scale(2); opacity: 0}
+}
+@keyframes identifier2 {
+  0% { transform: scale(0.1);opacity: 0}
+  10% { transform: scale(1); opacity: 1}
+  20% { transform: scale(1); opacity: 1}
+  50% { transform: scale(1);opacity: 1 }
+  80% { transform: scale(1); opacity: 1}
+  90% { transform: scale(1); opacity: 1}
   100% { transform: scale(1); opacity: 0}
 }
 </style>

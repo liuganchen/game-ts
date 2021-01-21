@@ -89,6 +89,7 @@ export default class GameBet extends Vue{
     if(this.roundInfo.timeType === "betTime") {
       this.totalAssets += this.nowBetEntity.total();
       this.nowBetEntity = new BetEntity();
+      this.game$.updateBetEntity(this.nowBetEntity);
     }
   }
   betAction(keyName: betKeyType) {
@@ -119,6 +120,7 @@ export default class GameBet extends Vue{
     // 开始倒计时，下注区域被激活，可以操作
     this.beginBetTimer();
     // todo 测试需要，自动续压
+    console.log('【test】程序控制：自动续压');
     this.copyBeforeBet();
   }
   /** 开始时间操作 **/
