@@ -28,14 +28,14 @@ import {Component, Vue} from "vue-property-decorator";
 import {Inject} from "@/di/inject";
 import {GameService} from "@/service/game-service";
 import {filter, map} from "rxjs/operators";
-import {gameRoundInfoKey} from "@/service/common-data";
-import {RoundEntity} from "@/entity/round-entity";
+import {freeIsOver, gameRoundInfoKey} from "@/service/common-data";
+import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
 import {timer} from "rxjs";
 @Component({})
 export default class GameShowRes extends Vue{
   @Inject() private game$!: GameService;
   private jackpotInfo = this.game$.jackpotInfo;
-  private historyInfo = this.game$.roundHisInfo;
+  private historyInfo: RoundEntityWithBet[] | null = [];
   private roundEntity = new RoundEntity();
   private showRes = false;
   private showScore = false;
@@ -48,21 +48,33 @@ export default class GameShowRes extends Vue{
             map(msg => msg.data)
         ).subscribe(data => {
           this.roundEntity = data;
+          // 格式化结果信息，打开播放动画开关
           if(this.game$.roundHisInfo.length > 0){
             const lastRoundInfo = this.game$.roundHisInfo[this.game$.roundHisInfo.length - 1];
-            this.historyInfo = this.game$.roundHisInfo;
             // 显示结果
             this.showRes = true;
-            this.resScore = this.game$.roundHisInfo[this.historyInfo.length - 1]?.setInfo || 0;
+            this.resScore = this.game$.roundHisInfo[this.game$.roundHisInfo.length - 1]?.setInfo || 0;
             // 没有下注，不显示得分
             this.showScore = (lastRoundInfo.betInfo?.total() || 0) > 0
           }
-          timer(3000).subscribe(()=>{
+          // 定时结束动画
+          timer(3000).subscribe(() => {
             this.showRes = false;
             this.showScore = false;
             this.jackpotInfo = this.game$.jackpotInfo;
+          });
+          // 更新历史结果
+          timer(3100).subscribe(() => {
+            this.historyInfo = this.game$.roundHisInfo;
+          });
+          // 更新历史结果
+          timer(3200).subscribe(() => {
             this.scrollView();
-          })
+          });
+          // 通知完成空闲阶段的动画播放。
+          timer(4000).subscribe(() => {
+            this.game$.pushMsg({type: freeIsOver, data: this.roundEntity})
+          });
     })
   }
   scrollView(coord = 80) {

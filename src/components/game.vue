@@ -22,7 +22,6 @@ import {GameService} from "@/service/game-service";
 import {Inject} from "@/di/inject";
 import {RoundEntity} from "@/entity/round-entity";
 import {betIsOver, evasiveIsOver, freeIsOver, gameRoundInfoKey, gameStaticConfig} from "@/service/common-data";
-import {timer} from "rxjs";
 import {filter} from "rxjs/operators";
 import GameShowRes from "@/components/game-show-res.vue";
 
@@ -62,10 +61,6 @@ export default class Game extends Vue{
     this.roundEntity.timeType = "freeTime";
     this.roundEntity.time = this.gameConfig.freeTime;
     this.game$.pushMsg({type: gameRoundInfoKey, data: this.roundEntity})
-    // 空闲一段事件后，广播空闲时间结束
-    timer(this.gameConfig.freeTime * 1000).subscribe(()=> {
-      this.game$.pushMsg({type: freeIsOver, data: this.roundEntity})
-    });
   }
   /** 开始下注时间 **/
   startBet() {

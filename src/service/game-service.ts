@@ -14,7 +14,7 @@ import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
  *    2，系统信息：总奖池，回合数量及结果（历史信息记录）
  *    3，当前回合信息：目标结果储存 ----- 这个信息就需要延时获取。
  */
-@Service(true)
+@Service()
 export class GameService {
   // 信息push中间件
   private msgSub = new Subject<MsgEntity>();
@@ -112,6 +112,7 @@ export class GameService {
     const chanceAnimal = animalChance.filter(ani => ani.chanceMin <= rand100s && rand100s <= ani.chanceMax)[0];
     const resAniList = this.animalListCommonData.filter(ani => ani.name === chanceAnimal.name);
     // 综合以上三者，计算目标动物
+    console.log('计算结果：', rand100s);
     return resAniList[GameService.randomNumForNTOM(resAniList.length - 1, 0)];
   }
 
@@ -191,3 +192,4 @@ export class GameService {
     return Math.floor(Math.random()*(m-n+1)+n)
   }
 }
+
