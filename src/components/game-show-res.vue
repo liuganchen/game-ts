@@ -14,11 +14,11 @@
     </div>
     <!--  结果动画显示  -->
     <div class="res-show">
-      <div v-if="roundEntity.resultInfo && showRes" class="history-cell" :class="roundEntity.resultInfo.shortName"></div>
+      <div v-if="showRes" class="history-cell" :class="roundEntity.resultInfo.shortName"></div>
     </div>
     <!--  得分显示  -->
     <div class="res-score">
-      <div v-if="roundEntity.resultInfo && showRes && showScore" class="score-num-view">{{ resScore }}</div>
+      <div v-if="showScore" class="score-num-view">{{ resScore }}</div>
     </div>
   </div>
 </template>
@@ -34,7 +34,7 @@ import {timer} from "rxjs";
 @Component({})
 export default class GameShowRes extends Vue{
   @Inject() private game$!: GameService;
-  private jackpotInfo = this.game$.jackpotInfo;
+  private jackpotInfo = this.game$.getJackpotInfo();
   private historyInfo: RoundEntityWithBet[] | null = [];
   private roundEntity = new RoundEntity();
   private showRes = false;
@@ -48,12 +48,13 @@ export default class GameShowRes extends Vue{
             map(msg => msg.data)
         ).subscribe(data => {
           this.roundEntity = data;
+          const roundHisInfo = this.game$.getHistoryAnimals();
           // 格式化结果信息，打开播放动画开关
-          if(this.game$.roundHisInfo.length > 0){
-            const lastRoundInfo = this.game$.roundHisInfo[this.game$.roundHisInfo.length - 1];
-            // 显示结果
+          if(roundHisInfo.length > 0){
             this.showRes = true;
-            this.resScore = this.game$.roundHisInfo[this.game$.roundHisInfo.length - 1]?.setInfo || 0;
+            const lastRoundInfo = roundHisInfo[roundHisInfo.length - 1];
+            // 显示结果
+            this.resScore = roundHisInfo[roundHisInfo.length - 1]?.setInfo || 0;
             // 没有下注，不显示得分
             this.showScore = (lastRoundInfo.betInfo?.total() || 0) > 0
           }
@@ -61,14 +62,12 @@ export default class GameShowRes extends Vue{
           timer(3000).subscribe(() => {
             this.showRes = false;
             this.showScore = false;
-            this.jackpotInfo = this.game$.jackpotInfo;
+            this.jackpotInfo = this.game$.getJackpotInfo();
+            // 更新历史结果
+            this.historyInfo = this.game$.getHistoryAnimals();
           });
-          // 更新历史结果
-          timer(3100).subscribe(() => {
-            this.historyInfo = this.game$.roundHisInfo;
-          });
-          // 更新历史结果
-          timer(3200).subscribe(() => {
+          // 历史结果列表滚动
+          timer(3500).subscribe(() => {
             this.scrollView();
           });
           // 通知完成空闲阶段的动画播放。

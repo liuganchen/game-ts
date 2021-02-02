@@ -18,22 +18,29 @@ import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
 export class GameService {
   // 信息push中间件
   private msgSub = new Subject<MsgEntity>();
-  public msgObs = this.msgSub.asObservable();
   // 用户信息 需要实时更新1，金币信息
-  public userTotalAssetsNum = gameStaticConfig.defaultTotalAssets;
+  private userTotalAssetsNum = gameStaticConfig.defaultTotalAssets;
   // 2，得分信息 , 只算赢
-  public userScoreNum = 0;
+  private userScoreNum = 0;
   // 3，下注信息，历史下注信息
   private betMap: Map<string, betKeyType> = initBetMap;
   private betEntity: BetEntity = initBetEntity;
   // 系统信息 1，总奖池信息
-  public jackpotInfo = 0;
+  private jackpotInfo = 0;
   // 2，游戏回合历史信息
-  public roundHisInfo: RoundEntityWithBet[] = [];
+  private roundHisInfo: RoundEntityWithBet[] = [];
   // 3，当前回合信息 可以自行修改
-  public nowRoundInfo: RoundEntity = new RoundEntity();
+  private nowRoundInfo: RoundEntity = new RoundEntity();
   // 4, 常量：动物数组
   private animalListCommonData: AnimalEntity[] = [];
+  /** 对外暴露消息OBS **/
+  public msgObs = this.msgSub.asObservable();
+
+  /** 产生 n ~ m 的随机数 */
+  public static randomNumForNTOM(m: number , n: number): number {
+    return Math.floor(Math.random()*(m-n+1)+n)
+  }
+
   /**
    * 推送游戏消息
    * @param msg
@@ -165,31 +172,47 @@ export class GameService {
     return roundEntityWithBet;
   }
 
-  updateBetEntityKeyValue(betKey: betKeyType, value: number) {
+  /**** 获取历史动物列表 ***/
+  public getHistoryAnimals(): RoundEntityWithBet[] {
+    return this.roundHisInfo.map(item => item);
+  }
+
+  /** 获取当前回合结果分数 **/
+  public getResScore(): number {
+    const roundHisInfo = this.getHistoryAnimals();
+    const lastRoundInfo = roundHisInfo[roundHisInfo.length - 1];
+    return lastRoundInfo?.setInfo || 0;
+  }
+
+  /** 获取用户总分数 */
+  public getUserTotalScore(): number{
+    return this.userTotalAssetsNum;
+  }
+
+  /** 更新用户总分数 */
+  public updateUserTotalScore(num: number): void{
+    this.userTotalAssetsNum = num;
+  }
+
+  /*** 获取用户的得分信息 ***/
+  public getUserScoreNum(): number {
+    return this.userScoreNum;
+  }
+
+  /** 获取当前奖池信息 **/
+  public getJackpotInfo(): number {
+    return this.jackpotInfo;
+  }
+
+  /** 更新下注信息 */
+  public updateBetEntityKeyValue(betKey: betKeyType, value: number) {
     this.betEntity[betKey] = value;
   }
-  updateBetEntity(ent: BetEntity) {
+
+  /** 一次性更新下注信息 **/
+  public updateBetEntity(ent: BetEntity) {
     this.betEntity = ent;
   }
 
-
-  // ////////////////////////////////////////////////////////////////////////////
-  // // set get 方法区域 /////////////////////////////////////////////////////////
-  // public getUserTotalAssetsNum(): number {
-  //   return this._userTotalAssetsNum;
-  // }
-  // public setUserTotalAssetsNum(totalAssetsNum: number): void {
-  //   this._userTotalAssetsNum = totalAssetsNum;
-  // }
-  // public getUserScoreNum(): number {
-  //   return this._userScoreNum;
-  // }
-  // public setUserScoreNum(value: number) {
-  //   this._userScoreNum = value;
-  // }
-
-  public static randomNumForNTOM(m: number , n: number): number {
-    return Math.floor(Math.random()*(m-n+1)+n)
-  }
 }
 

@@ -110,10 +110,10 @@ export const siteList = [
 export const gameStaticConfig = {
   startTime: 5,
   freeTime: 4,
-  betTime:20,
+  betTime:15,
   turns: 4,
   fsFlag: 50000,
-  defaultTotalAssets: 1000000
+  defaultTotalAssets: 10000
 }
 // 消息key 值
 export const gameRoundInfoKey = Symbol('游戏当前回合信息');

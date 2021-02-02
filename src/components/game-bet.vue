@@ -68,13 +68,17 @@ export default class GameBet extends Vue{
   scoreNum = 0;
 
   @Watch('totalAssets') onTotalAssetsChange(){
-    this.game$.userTotalAssetsNum = this.totalAssets;
+    this.game$.updateUserTotalScore(this.totalAssets);
   }
   get disabledClass() {
     return this.roundInfo.timeType === 'betTime' ? '' : 'disabled';
   }
   copyBeforeBet() {
     if(this.roundInfo.timeType === 'betTime') {
+      // 判断资金
+      if(this.beforeBetEntity.total() > this.totalAssets) {
+        return;
+      }
       this.nowBetEntity = this.beforeBetEntity;
       this.totalAssets -= this.nowBetEntity.total();
       console.log('【续压】......')
@@ -112,8 +116,8 @@ export default class GameBet extends Vue{
     this.beforeBetEntity = this.nowBetEntity;
     this.nowBetEntity = new BetEntity();
     // 查询金币，如果金币 / 积分 增加，开始播放金币增加的动画
-    this.totalAssets = this.game$.userTotalAssetsNum;
-    this.scoreNum = this.game$.userScoreNum;
+    this.totalAssets = this.game$.getUserTotalScore();
+    this.scoreNum = this.game$.getUserScoreNum();
   }
   /** 下注时间操作 **/
   public betTimeAction() {
