@@ -214,5 +214,14 @@ export class GameService {
     this.betEntity = ent;
   }
 
+  public initLocalData(): void {
+    if(localStorage.getItem('roundHisInfo')) {
+      this.roundHisInfo = JSON.parse(localStorage.getItem('roundHisInfo') as string);
+    }
+  }
+  /** 保存数据到本地 */
+  public saveLocalData(): void {
+    localStorage.setItem('roundHisInfo', JSON.stringify(this.roundHisInfo));
+  }
 }
 

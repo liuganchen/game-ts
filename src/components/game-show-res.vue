@@ -35,7 +35,7 @@ import {timer} from "rxjs";
 export default class GameShowRes extends Vue{
   @Inject() private game$!: GameService;
   private jackpotInfo = this.game$.getJackpotInfo();
-  private historyInfo: RoundEntityWithBet[] | null = [];
+  private historyInfo: RoundEntityWithBet[] | null = this.game$.getHistoryAnimals();
   private roundEntity = new RoundEntity();
   private showRes = false;
   private showScore = false;
@@ -77,7 +77,7 @@ export default class GameShowRes extends Vue{
     })
   }
   scrollView(coord = 80) {
-    if(!this.$refs.historyList || this.$refs.historyScroll){
+    if(!this.$refs.historyList || !this.$refs.historyScroll){
       return;
     }
     // 内部滚动条的偏移量 left
