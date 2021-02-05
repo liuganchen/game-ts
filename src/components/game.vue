@@ -74,7 +74,6 @@ export default class Game extends Vue{
 
   /** 游戏运行 + 监听 **/
   mounted(){
-    this.game$.initLocalData();
     // 开始游戏
     this.startGame();
     // 监听下注阶段结束,开始轮转

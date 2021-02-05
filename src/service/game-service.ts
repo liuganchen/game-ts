@@ -25,6 +25,7 @@ export class GameService {
   // 3，下注信息，历史下注信息
   private betMap: Map<string, betKeyType> = initBetMap;
   private betEntity: BetEntity = initBetEntity;
+  private setInfo = 0;
   // 系统信息 1，总奖池信息
   private jackpotInfo = 0;
   // 2，游戏回合历史信息
@@ -41,6 +42,9 @@ export class GameService {
     return Math.floor(Math.random()*(m-n+1)+n)
   }
 
+  constructor() {
+    this.initLocalData();
+  }
   /**
    * 推送游戏消息
    * @param msg
@@ -161,6 +165,7 @@ export class GameService {
     }
 
     roundEntityWithBet.setInfo = setInfo;
+    this.setInfo = setInfo;
     // 更新得分信息
     this.userScoreNum += roundEntityWithBet.setInfo;
     // 去掉下注的分数
@@ -188,9 +193,12 @@ export class GameService {
 
   /** 获取当前回合结果分数 **/
   public getResScore(): number {
-    const roundHisInfo = this.getHistoryAnimals();
-    const lastRoundInfo = roundHisInfo[roundHisInfo.length - 1];
-    return lastRoundInfo?.setInfo || 0;
+    return this.setInfo;
+  }
+
+  /** 当前回合的下注信息 ***/
+  public getNowRoundInfo(): number{
+    return this.betEntity.total();
   }
 
   /** 获取用户总分数 */

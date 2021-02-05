@@ -9,14 +9,14 @@
       <div class="left-btn" @click="scrollView(-80)"></div>
       <div ref="historyScroll" class="history-list-scroll">
         <div ref="historyList" class="history-cell-list">
-          <div v-for="item in historyInfo" :key="item.date" :class="item.resultInfo.shortName" class="history-cell"></div>
+          <div v-for="item in historyInfo" :key="item.date" :class="item.resultInfo && item.resultInfo.shortName" class="history-cell"></div>
         </div>
       </div>
       <div class="right-btn" @click="scrollView(80)"></div>
     </div>
     <!--  结果动画显示  -->
     <div class="res-show">
-      <div v-if="showRes" class="history-cell" :class="roundEntity.resultInfo.shortName"></div>
+      <div v-if="showRes" class="history-cell" :class="roundEntity.resultInfo && roundEntity.resultInfo.shortName"></div>
     </div>
     <!--  得分显示  -->
     <div class="res-score">
@@ -46,6 +46,7 @@ export default class GameShowRes extends Vue{
   private showScore = false;
   private resScore = 0;
   mounted(){
+    console.log(this.historyInfo);
     this.game$.msgObs
         .pipe(
             filter(msg => msg.type === gameRoundInfoKey),
@@ -53,16 +54,12 @@ export default class GameShowRes extends Vue{
             map(msg => msg.data)
         ).subscribe(data => {
           this.roundEntity = data;
-          const roundHisInfo = this.game$.getHistoryAnimals();
           // 格式化结果信息，打开播放动画开关
-          if(roundHisInfo.length > 0){
-            this.showRes = true;
-            const lastRoundInfo = roundHisInfo[roundHisInfo.length - 1];
-            // 显示结果
-            this.resScore = roundHisInfo[roundHisInfo.length - 1]?.setInfo || 0;
-            // 没有下注，不显示得分
-            this.showScore = (lastRoundInfo.betInfo?.total() || 0) > 0
-          }
+          this.showRes = !!this.roundEntity.resultInfo;
+          // 显示结果
+          this.resScore = this.game$.getResScore();
+          // 没有下注，不显示得分
+          this.showScore = this.game$.getNowRoundInfo() > 0;
           // 定时结束动画
           timer(3000).subscribe(() => {
             this.showRes = false;
@@ -73,7 +70,7 @@ export default class GameShowRes extends Vue{
           });
           // 历史结果列表滚动
           timer(3500).subscribe(() => {
-            this.scrollView();
+            this.scrollView(2400);
           });
           // 通知完成空闲阶段的动画播放。
           timer(4000).subscribe(() => {
