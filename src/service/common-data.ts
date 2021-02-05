@@ -112,8 +112,8 @@ export const gameStaticConfig = {
   freeTime: 4,
   betTime:15,
   turns: 4,
-  fsFlag: 50000,
-  defaultTotalAssets: 10000
+  fsFlag: 500000,
+  defaultTotalAssets: 1000000
 }
 // 消息key 值
 export const gameRoundInfoKey = Symbol('游戏当前回合信息');

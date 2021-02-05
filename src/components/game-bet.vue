@@ -30,7 +30,9 @@
   </div>
   <!-- 下注倍率选择 -->
   <div class="jet-ton-action">
-    <div class="side-view score-num"><span>{{ scoreNum }}</span></div>
+    <div class="side-view score-num">
+      <game-coin :value="scoreNum"/>
+    </div>
     <div class="jetton-btns">
       <div class="jetton-100-btn btn" :class="disabledClass" @click="changeJetTon(100)"></div>
       <div class="jetton-1000-btn btn" :class="disabledClass" @click="changeJetTon(1000)"></div>
@@ -38,7 +40,9 @@
       <div class="jetton-10w-btn btn" :class="disabledClass" @click="changeJetTon(100000)"></div>
       <div class="jetton-100w-btn btn" :class="disabledClass" @click="changeJetTon(1000000)"></div>
     </div>
-    <div class="side-view assets-num"><span>{{ totalAssets }}</span></div>
+    <div class="side-view assets-num">
+      <game-coin :value="totalAssets"/>
+    </div>
   </div>
 </div>
 </template>
@@ -53,8 +57,10 @@ import {MsgEntity} from "@/entity/msg-entity";
 import {RoundEntity} from "@/entity/round-entity";
 import {BetEntity, betKeyType} from "@/entity/bet-entity";
 import {timer} from "rxjs";
-
-@Component
+import GameCoin from "@/components/game-coin.vue";
+@Component({
+  components: {GameCoin}
+})
 export default class GameBet extends Vue{
   @Inject() private game$!: GameService;
   // 当前回合信息
@@ -74,6 +80,8 @@ export default class GameBet extends Vue{
     return this.roundInfo.timeType === 'betTime' ? '' : 'disabled';
   }
   copyBeforeBet() {
+    // 先清空
+    this.clearNowBet();
     if(this.roundInfo.timeType === 'betTime') {
       // 判断资金
       if(this.beforeBetEntity.total() > this.totalAssets) {
@@ -82,6 +90,7 @@ export default class GameBet extends Vue{
       this.nowBetEntity = this.beforeBetEntity;
       this.totalAssets -= this.nowBetEntity.total();
       console.log('【续压】......')
+      this.game$.updateBetEntity(this.nowBetEntity);
     }
   }
   changeJetTon(jetNum: number) {

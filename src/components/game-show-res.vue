@@ -1,7 +1,9 @@
 <template>
   <div class="game-show-res">
     <!--  彩金池  -->
-    <div class="jackpot-info">{{ jackpotInfo }}</div>
+    <div class="jackpot-info">
+      <game-coin :value="jackpotInfo"/>
+    </div>
     <!--  历史记录  -->
     <div class="history-view">
       <div class="left-btn" @click="scrollView(-80)"></div>
@@ -31,7 +33,10 @@ import {filter, map} from "rxjs/operators";
 import {freeIsOver, gameRoundInfoKey} from "@/service/common-data";
 import {RoundEntity, RoundEntityWithBet} from "@/entity/round-entity";
 import {timer} from "rxjs";
-@Component({})
+import GameCoin from "@/components/game-coin.vue";
+@Component({
+  components: {GameCoin}
+})
 export default class GameShowRes extends Vue{
   @Inject() private game$!: GameService;
   private jackpotInfo = this.game$.getJackpotInfo();

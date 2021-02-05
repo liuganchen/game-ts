@@ -163,10 +163,15 @@ export class GameService {
     roundEntityWithBet.setInfo = setInfo;
     // 更新得分信息
     this.userScoreNum += roundEntityWithBet.setInfo;
+    // 去掉下注的分数
+    this.userScoreNum -= this.betEntity.total();
     // 更新总分信息
     this.userTotalAssetsNum += roundEntityWithBet.setInfo;
     // 更新奖池
-    this.jackpotInfo = this.jackpotInfo + this.betEntity.total() - roundEntityWithBet.setInfo;
+    const jack = this.betEntity.total() - roundEntityWithBet.setInfo;
+    console.log('当前的本回合彩金----', jack, this.betEntity , roundEntityWithBet);
+    this.jackpotInfo = Math.ceil(this.jackpotInfo + jack * (jack > 0 ? 0.95 : 1.05));
+    console.log('当前的彩金----', this.jackpotInfo);
     // 结果存入历史
     this.roundHisInfo.push(roundEntityWithBet);
     return roundEntityWithBet;
