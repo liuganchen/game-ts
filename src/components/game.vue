@@ -94,9 +94,6 @@ export default class Game extends Vue{
       this.startFree();
     })
   }
-  destroy() {
-    this.game$.saveLocalData();
-  }
 }
 </script>
 

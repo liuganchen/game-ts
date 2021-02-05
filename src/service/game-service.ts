@@ -174,6 +174,10 @@ export class GameService {
     console.log('当前的彩金----', this.jackpotInfo);
     // 结果存入历史
     this.roundHisInfo.push(roundEntityWithBet);
+    if(this.roundHisInfo.length > 30) {
+      this.roundHisInfo.slice(this.roundHisInfo.length - 30, this.roundHisInfo.length);
+    }
+    this.saveLocalData();
     return roundEntityWithBet;
   }
 
@@ -223,9 +227,13 @@ export class GameService {
     if(localStorage.getItem('roundHisInfo')) {
       this.roundHisInfo = JSON.parse(localStorage.getItem('roundHisInfo') as string);
     }
+    if(localStorage.getItem('jackpotInfo')){
+      this.jackpotInfo = Number(localStorage.getItem('jackpotInfo'));
+    }
   }
   /** 保存数据到本地 */
   public saveLocalData(): void {
+    localStorage.setItem('jackpotInfo', this.jackpotInfo + '');
     localStorage.setItem('roundHisInfo', JSON.stringify(this.roundHisInfo));
   }
 }
