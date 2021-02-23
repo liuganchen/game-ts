@@ -45,7 +45,7 @@ export default class Game extends Vue{
     this.startFree();
   }
 
-  /** 开始调用轮转操作 */
+  /** 开始 */
   public startBegin() {
     // 进入开始阶段
     console.log('【开始】游戏进入开始时间')
