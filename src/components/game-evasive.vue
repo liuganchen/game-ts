@@ -16,7 +16,6 @@ import {Inject} from '@/di/inject';
 import {Component, Vue} from "vue-property-decorator";
 import {filter, map} from "rxjs/operators";
 import {evasiveIsOver, gameRoundInfoKey, gameStaticConfig} from "@/service/common-data";
-import {RoundEntity} from "@/entity/round-entity";
 import {AnimalEntity} from "@/entity/animal-entity";
 import {timer} from "rxjs";
 @Component
