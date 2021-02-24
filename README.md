@@ -1,5 +1,9 @@
 # game-ts
 
+## info
+    
+    经典街机游戏飞禽走兽移植游戏：vue2.x + ts + rxjs
+
 ## Project setup
 ```
 yarn install
